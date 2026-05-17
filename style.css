@@ -1,0 +1,186 @@
+.test{
+    font-family: "Arial", sans-serif;
+}
+
+.source{
+    font-family: "Courier New", monospace;
+    margin: 10px;
+}
+
+.source > span{
+    margin: 0 5px;
+}
+
+/* Layout */
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: #0f1724;
+    color: #e6eef8;
+}
+
+#app {
+    padding: 16px;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 280px 1fr auto;
+    gap: 20px;
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.panel {
+    background: #0b1220;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.hud { display:flex; flex-direction:column; gap:10px }
+.hud > div { padding:8px 10px; background: rgba(255,255,255,0.03); border-radius:6px; border-left: 3px solid #1f6feb }
+
+.game-area {
+    min-height: 500px;
+    background: linear-gradient(180deg,#081826 0%, #0b1b2a 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(31, 111, 235, 0.2);
+}
+
+.sprite-slot {
+    width: 96px;
+    height: 96px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.05);
+    border-radius: 8px;
+    display:flex; align-items:center; justify-content:center;
+    color: #9fb3c8;
+}
+
+/* main-sprite removed — center shows placed sprites only */
+
+.placed-sprite {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    transition: transform 0.2s ease, opacity 0.3s ease;
+    opacity: 0.95;
+}
+
+.sources { 
+    display:flex; 
+    flex-direction:column; 
+    gap:10px; 
+    width: 600px; 
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-right: 8px; /* space for scrollbar */
+}
+
+/* Custom scrollbar for a better look */
+.sources::-webkit-scrollbar {
+    width: 6px;
+}
+.sources::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.02);
+}
+.sources::-webkit-scrollbar-thumb {
+    background: #1f6feb;
+    border-radius: 10px;
+}
+
+.source { 
+    display: grid;
+    grid-template-areas: 
+        "thumb name name buy"
+        "thumb stats stats buy";
+    grid-template-columns: 48px 1fr 1fr auto;
+    gap: 4px 15px;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    font-size: 1rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.source .thumb {
+    grid-area: thumb;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.source .name { 
+    grid-area: name;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.source .stats-container {
+    grid-area: stats;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.source .info, .source .pollution, .source .count, .source .cost {
+    font-family: "Courier New", monospace;
+    font-size: 0.85rem;
+    color: #9fb3c8;
+    white-space: nowrap;
+}
+
+.source button { 
+    grid-area: buy;
+    background:#1f6feb; 
+    color:white; 
+    border:0; 
+    padding:12px 20px; 
+    border-radius:6px;
+    font-weight: bold;
+    min-width: 80px;
+}
+.source button:disabled { opacity:0.4 }
+
+button { cursor:pointer }
+
+@media (max-width: 1200px) {
+    .container { 
+        grid-template-columns: 1fr;
+        max-width: 700px;
+    }
+    .sources {
+        width: 100%;
+        max-height: none;
+    }
+}
+
+/* sprite instances that appear in the game area */
+.sprite-instance {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+    animation: sprite-pop 1.6s forwards;
+}
+
+@keyframes sprite-pop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    10% { opacity: 1; transform: translate(-50%, -60%) scale(1.05); }
+    70% { opacity: 1; transform: translate(-50%, -160%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -220%) scale(0.8); }
+}
