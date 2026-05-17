@@ -1,60 +1,53 @@
 # CO2mpromise
 
-CO2mpromise is an idle/incremental clicker game with educational elements, where you build and manage a portfolio of energy sources, balancing output, pollution, and market prices to grow your energy empire sustainably.
+CO2mpromise is an incremental/idle game about building energy sources, balancing power production, pollution, and market dynamics. This repository currently contains a lightweight web prototype (ES modules + vanilla JS) alongside original LÖVE-era assets and design notes.
 
-## Game Overview
+Status: web prototype — playable in the browser (no build tooling required).
 
-- **Genre:** Idle / Incremental Clicker with Educational Elements
-- **Platform:** PC (LÖVE 2D)
-- **Core Concept:**  
-  Players build and manage energy production sources, balancing output, pollution, and market prices to grow their energy empire sustainably.
+## Quick start (web prototype)
 
-## Project Structure
+Serve the folder from a local static server and open it in your browser. Example using Python 3:
 
-```
-CO2mpromise
-├── src
-│   ├── main.lua        # Entry point of the game (LÖVE callbacks)
-│   └── utils.lua       # Utility functions
-├── assets
-│   └── sounds          # Directory for sound files
-├── GAME_DESIGN.md      # Game design document
-└── README.md           # Project documentation
+```bash
+python -m http.server 8000
+# then open http://localhost:8000 in your browser
 ```
 
-## Getting Started
+The prototype is intentionally zero-install — it uses ES modules and loads assets from the `sprites/` and `assets/` folders.
 
-You can install LÖVE using [Homebrew](https://brew.sh/) on macOS:
+## Project layout (high level)
 
-```sh
-brew install --cask love
+```
+CO2mpromise/
+├── game.js         # app bootstrap + main loop
+├── ui.js           # DOM UI + sprite placement
+├── state.js        # simulation, tick, buy, totals
+├── tech.js         # definitions for energy sources
+├── sprites/        # sprite PNGs used by the UI
+├── style.css       # stylesheet
+├── index.html
+├── README.md
+└── GAME_DESIGN.md
 ```
 
-Or download it from [the official LÖVE website](https://love2d.org/).
+## How to play (prototype)
 
+- Click the `Hand Crank` button to get immediate gold.
+- Buy sources from the right-hand panel; each purchase spawns a visual sprite in the main area and increases passive income.
+- Watch `Pollution` and `Market` — pollution reduces income via a penalty curve; market price floats with supply/demand.
 
-### Running the Game
+## Development notes
 
-1. Clone the repository or download the project files.
-2. Navigate to the project directory in your terminal.
-3. Run the game using the following command:
-
-   ```
-   love .
-   ```
-
-## Features
-
-- Energy production and management
-- Dynamic market price simulation
-- Pollution tracking and limits
-- Build queue for long-construction sources
-- Research and upgrades (planned)
-- Event system (planned)
-- Educational feedback and stats
+- Sprites are in `sprites/` and referenced from `tech.js` via `img_filename`.
+- The `state` object is serialized only in-memory for now; add `localStorage` save/load if you want persistence.
+- UI layout is in `style.css` with a responsive grid that stacks on narrow screens.
 
 ## Contributing
 
-Feel free to contribute to this project by submitting issues or pull requests. Your feedback and suggestions are welcome!
+PRs, issues and suggestions are welcome. If you want to contribute small UI/UX improvements or balancing changes, open a PR against the `main` branch.
 
-For the full game design, see [GAME_DESIGN.md](./GAME_DESIGN.md).
+## .gitignore
+
+A `.gitignore` has been added to exclude editor, OS, and build artifacts — please follow it when committing.
+
+For design rationale and older LÖVE code references, see `GAME_DESIGN.md`.
