@@ -1,53 +1,78 @@
 # CO2mpromise
 
-CO2mpromise is an incremental/idle game about building energy sources, balancing power production, pollution, and market dynamics. This repository currently contains a lightweight web prototype (ES modules + vanilla JS) alongside original LÖVE-era assets and design notes.
+A small **clean-energy tycoon** prototype: build power sources on a limited site,
+keep production in line with demand, and stop your carbon output from eating
+your profits. Vanilla ES modules, no build step.
 
-Status: web prototype — playable in the browser (no build tooling required).
+## Run it
 
-## Quick start (web prototype)
-
-Serve the folder from a local static server and open it in your browser. Example using Python 3:
+Serve the folder with any static server, then open the page:
 
 ```bash
 python -m http.server 8000
-# then open http://localhost:8000 in your browser
+# http://localhost:8000
 ```
 
-The prototype is intentionally zero-install — it uses ES modules and loads assets from the `sprites/` and `assets/` folders.
+ES modules need to be served over HTTP (opening `index.html` directly with
+`file://` will be blocked by the browser).
 
-## Project layout (high level)
+## The loop
+
+1. **Hand Crank** for starting cash, then buy your first Hamster Wheel.
+2. **Build** structures from the right-hand panel. Every structure occupies one
+   plot, and most take real time to construct — watch them in the
+   **Construction** panel.
+3. **Match demand.** Electricity sells at the market price. Keep production near
+   demand: underproducing leaves sales on the table, overproducing pushes the
+   price per kWh down.
+4. **Watch CO₂.** Dirty plants raise the CO₂ stock, which applies a carbon
+   penalty to all income. Carbon Scrubbers and research clean it up.
+5. **Expand land** when the site is full, and **research** upgrades to get more
+   out of each structure.
+6. **Complete contracts** for cash rewards and a sense of direction.
+
+The economy runs while you are away (offline income is capped and credited at
+50% efficiency). Progress auto-saves to `localStorage` every few seconds.
+
+## What is in the prototype
+
+- 9 buildable structures with per-unit costs, output, emissions, and build times
+- A construction queue with limited crews and visible progress bars
+- Land/plot management with escalating expansion costs
+- 9 one-time research upgrades (output, emissions, crews, sale price)
+- A supply/demand market with a live production-vs-demand chart
+- A cumulative CO₂ model with scrubbers, absorption, and a carbon penalty
+- 9 contracts with cash rewards
+- Random events (heat waves, cloud cover, carbon inspections, grants, price booms)
+- Persistent saves, offline income, and a reset button
+
+## Project layout
 
 ```
 CO2mpromise/
-├── game.js         # app bootstrap + main loop
-├── ui.js           # DOM UI + sprite placement
-├── state.js        # simulation, tick, buy, totals
-├── tech.js         # definitions for energy sources
-├── sprites/        # sprite PNGs used by the UI
-├── style.css       # stylesheet
+├── game.js         # bootstrap + real-time simulation loop
+├── state.js        # economy, market, pollution, actions, save/load
+├── ui.js           # dashboard DOM, plot grid, build/research/contracts
+├── tech.js         # all balance numbers and content definitions
+├── format.js       # shared number formatting
+├── sprites/        # PNG sprites
+├── style.css       # dashboard styling
 ├── index.html
 ├── README.md
-└── GAME_DESIGN.md
+└── GAME_DESIGN.md  # original design notes / vision
 ```
 
-## How to play (prototype)
+## Tuning
 
-- Click the `Hand Crank` button to get immediate gold.
-- Buy sources from the right-hand panel; each purchase spawns a visual sprite in the main area and increases passive income.
-- Watch `Pollution` and `Market` — pollution reduces income via a penalty curve; market price floats with supply/demand.
+Almost every balance knob lives at the top of `tech.js`:
 
-## Development notes
+- `BASE_PRICE`, `START_MONEY`, `START_PLOTS`, `START_DEMAND`
+- `DEMAND_FOLLOW` / `DEMAND_LAG` — how closely customers track your capacity
+- `CO2_HALF`, `BASE_ABSORPTION` — how punishing pollution is
+- `COST_GROWTH`, `LAND_*` — cost curves
+- `SOURCES`, `UPGRADES`, `OBJECTIVES`, `EVENTS` — content
 
-- Sprites are in `sprites/` and referenced from `tech.js` via `img_filename`.
-- The `state` object is serialized only in-memory for now; add `localStorage` save/load if you want persistence.
-- UI layout is in `style.css` with a responsive grid that stacks on narrow screens.
+## Notes
 
-## Contributing
-
-PRs, issues and suggestions are welcome. If you want to contribute small UI/UX improvements or balancing changes, open a PR against the `main` branch.
-
-## .gitignore
-
-A `.gitignore` has been added to exclude editor, OS, and build artifacts — please follow it when committing.
-
-For design rationale and older LÖVE code references, see `GAME_DESIGN.md`.
+- This is a prototype, not a balanced live game. Tune freely.
+- The original LÖVE-era design notes live in `GAME_DESIGN.md`.
