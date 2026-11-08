@@ -24,6 +24,23 @@ function h(tag, cls, text) {
   return el;
 }
 
+// Avoid replacing a text node on every 100ms tick. Replacing the text node
+// under the pointer can make browsers drop a click on a button.
+function setText(el, value) {
+  const v = String(value);
+  if (el.textContent !== v) el.textContent = v;
+}
+
+function setAttr(el, name, value) {
+  const v = String(value);
+  if (el.getAttribute(name) !== v) el.setAttribute(name, v);
+}
+
+function setClass(el, value) {
+  const v = String(value);
+  if (el.className !== v) el.className = v;
+}
+
 function makeStat(label, tip) {
   const el = h("div", "stat");
   const lab = h("div", "stat-label", label);
@@ -539,31 +556,36 @@ export function createUI() {
       const check = validateBuy(def.id);
       const count = state.purchases[def.id] || 0;
 
-      row.count.textContent = count ? `×${count}` : "";
-      row.powerChip.textContent =
-        def.power === 0 ? "no power" : `${fmt.num(stats.power)} kWh/s`;
+      setText(row.count, count ? `×${count}` : "");
+      setText(
+        row.powerChip,
+        def.power === 0 ? "no power" : `${fmt.num(stats.power)} kWh/s`
+      );
       row.powerChip.classList.toggle("hidden", def.power === 0);
 
       if (stats.co2 > 0) {
-        row.co2Chip.textContent = `${fmt.num(stats.co2)} kg CO₂/s`;
+        setText(row.co2Chip, `${fmt.num(stats.co2)} kg CO₂/s`);
         row.co2Chip.className = "chip chip-co2 bad";
       } else if (stats.co2 < 0) {
-        row.co2Chip.textContent = `−${fmt.num(Math.abs(stats.co2))} kg CO₂/s`;
+        setText(row.co2Chip, `−${fmt.num(Math.abs(stats.co2))} kg CO₂/s`);
         row.co2Chip.className = "chip chip-co2 good";
       } else {
-        row.co2Chip.textContent = "0 kg CO₂/s";
+        setText(row.co2Chip, "0 kg CO₂/s");
         row.co2Chip.className = "chip chip-co2 clean";
       }
 
-      row.timeChip.textContent =
-        def.buildTime > 0 ? `${fmt.secs(def.buildTime)} build` : "instant";
+      setText(
+        row.timeChip,
+        def.buildTime > 0 ? `${fmt.secs(def.buildTime)} build` : "instant"
+      );
 
-      row.cost.textContent = unlocked ? fmt.money(cost) : "";
+      setText(row.cost, unlocked ? fmt.money(cost) : "");
 
-      row.btn.textContent = unlocked ? "Build" : "Locked";
-      row.btn.disabled = false;
-      row.btn.setAttribute("aria-disabled", (!unlocked || !check.ok).toString());
-      row.btn.setAttribute(
+      setText(row.btn, unlocked ? "Build" : "Locked");
+      if (row.btn.disabled) row.btn.disabled = false;
+      setAttr(row.btn, "aria-disabled", !unlocked || !check.ok);
+      setAttr(
+        row.btn,
         "aria-label",
         check.reason ? `${def.name}: ${check.reason}` : `Build ${def.name}`
       );
@@ -575,7 +597,7 @@ export function createUI() {
       } else if (!check.ok) {
         statusText = buildStatus(check, cost);
       }
-      row.status.textContent = statusText;
+      setText(row.status, statusText);
       row.status.className =
         "build-status" + (unlocked && !check.ok ? " warn" : "");
 
@@ -592,7 +614,7 @@ export function createUI() {
       const check = validateUpgrade(up.id);
 
       row.card.classList.toggle("done", purchased);
-      row.cost.textContent = purchased ? "" : fmt.money(up.cost);
+      setText(row.cost, purchased ? "" : fmt.money(up.cost));
 
       let reqText = "";
       let reqClass = "research-req";
@@ -608,16 +630,17 @@ export function createUI() {
         reqText = "Ready";
         reqClass += " ready";
       }
-      row.req.textContent = reqText;
+      setText(row.req, reqText);
       row.req.className = reqClass;
-      row.btn.disabled = purchased;
-      row.btn.setAttribute("aria-disabled", (!purchased && !check.ok).toString());
-      row.btn.setAttribute(
+      if (row.btn.disabled !== purchased) row.btn.disabled = purchased;
+      setAttr(row.btn, "aria-disabled", !purchased && !check.ok);
+      setAttr(
+        row.btn,
         "aria-label",
         check.reason ? `${up.name}: ${check.reason}` : `Research ${up.name}`
       );
       row.btn.classList.toggle("blocked", !purchased && !check.ok);
-      row.btn.textContent = purchased ? "Done" : "Research";
+      setText(row.btn, purchased ? "Done" : "Research");
       row.card.classList.toggle("affordable", check.ok);
     }
   }
@@ -789,16 +812,18 @@ export function createUI() {
     if (!m) return;
 
     // Top stats
-    moneyStat.value.textContent = fmt.money(state.money);
-    moneyStat.sub.textContent = `earned ${fmt.money(state.totalEarned)} total`;
+    setText(moneyStat.value, fmt.money(state.money));
+    setText(moneyStat.sub, `earned ${fmt.money(state.totalEarned)} total`);
 
-    incomeStat.value.textContent = "+" + fmt.rate(m.income);
+    setText(incomeStat.value, "+" + fmt.rate(m.income));
     const penaltyPct = Math.max(0, (1 - m.pollutionPenalty) * 100);
-    incomeStat.sub.textContent =
-      penaltyPct >= 1 ? `penalty −${penaltyPct.toFixed(0)}%` : "no penalty";
+    setText(
+      incomeStat.sub,
+      penaltyPct >= 1 ? `penalty −${penaltyPct.toFixed(0)}%` : "no penalty"
+    );
     incomeStat.el.classList.toggle("bad", penaltyPct >= 1);
 
-    coverageStat.value.textContent = `${fmt.num(m.power)} / ${fmt.num(m.demand)} kWh/s`;
+    setText(coverageStat.value, `${fmt.num(m.power)} / ${fmt.num(m.demand)} kWh/s`);
     let covText;
     let covClass;
     if (m.power <= 0) {
@@ -814,64 +839,76 @@ export function createUI() {
       covText = `${fmt.pct(m.coverage)} covered — overproducing`;
       covClass = "warn";
     }
-    coverageStat.subText.textContent = covText;
-    coverageStat.subText.className = "sub-text " + covClass;
+    setText(coverageStat.subText, covText);
+    setClass(coverageStat.subText, "sub-text " + covClass);
     coverageStat.fill.style.width = `${Math.max(2, Math.min(1, m.coverage / 2) * 100)}%`;
-    coverageStat.fill.className = "mini-bar-fill " + covClass;
+    setClass(coverageStat.fill, "mini-bar-fill " + covClass);
 
-    priceStat.value.textContent = fmt.price(m.price);
+    setText(priceStat.value, fmt.price(m.price));
     const hist = state.history;
     const refPrice =
       hist.length >= 6 ? hist[hist.length - 6].price : hist.length ? hist[0].price : state.price;
     const trend = state.price - refPrice;
     if (trend > 0.004) {
-      priceStat.sub.textContent = "▲ rising";
-      priceStat.sub.className = "stat-sub good";
+      setText(priceStat.sub, "▲ rising");
+      setClass(priceStat.sub, "stat-sub good");
     } else if (trend < -0.004) {
-      priceStat.sub.textContent = "▼ falling";
-      priceStat.sub.className = "stat-sub bad";
+      setText(priceStat.sub, "▼ falling");
+      setClass(priceStat.sub, "stat-sub bad");
     } else {
-      priceStat.sub.textContent = "• steady";
-      priceStat.sub.className = "stat-sub";
+      setText(priceStat.sub, "• steady");
+      setClass(priceStat.sub, "stat-sub");
     }
 
-    co2Stat.value.textContent = fmt.kg(state.co2);
+    setText(co2Stat.value, fmt.kg(state.co2));
     const co2Class = state.co2 < 200 ? "good" : state.co2 < 1500 ? "warn" : "bad";
-    co2Stat.subText.textContent = `${fmt.sign(m.netEmissions)} kg/s · penalty −${penaltyPct.toFixed(0)}%`;
-    co2Stat.subText.className = "sub-text " + co2Class;
+    setText(
+      co2Stat.subText,
+      `${fmt.sign(m.netEmissions)} kg/s · penalty −${penaltyPct.toFixed(0)}%`
+    );
+    setClass(co2Stat.subText, "sub-text " + co2Class);
     co2Stat.fill.style.width = `${Math.max(0, Math.min(100, penaltyPct))}%`;
-    co2Stat.fill.className = "mini-bar-fill " + co2Class;
+    setClass(co2Stat.fill, "mini-bar-fill " + co2Class);
     co2Stat.el.classList.toggle("bad", co2Class === "bad");
 
-    landStat.value.textContent = `${m.freePlots} free`;
-    landStat.sub.textContent = `of ${state.plots.length} plots`;
+    setText(landStat.value, `${m.freePlots} free`);
+    setText(landStat.sub, `of ${state.plots.length} plots`);
 
     // Crank
-    crankAmount.textContent = "+" + fmt.money(m.clickIncome);
-    if (crankMeta._clicks) crankMeta._clicks.textContent = String(state.clicks);
+    setText(crankAmount, "+" + fmt.money(m.clickIncome));
+    if (crankMeta._clicks) setText(crankMeta._clicks, String(state.clicks));
 
     // Site
-    siteTitleWrap._hint.textContent = `${m.freePlots} free / ${state.plots.length} plots`;
+    setText(
+      siteTitleWrap._hint,
+      `${m.freePlots} free / ${state.plots.length} plots`
+    );
     const lc = landCost();
     const shortfall = Math.max(0, lc - state.money);
-    expandBtn.textContent = `Expand +${LAND_PER_EXPANSION} · ${fmt.money(lc)}`;
-    expandBtn.disabled = false;
-    expandBtn.setAttribute("aria-disabled", (shortfall > 0).toString());
-    expandBtn.setAttribute(
+    setText(expandBtn, `Expand +${LAND_PER_EXPANSION} · ${fmt.money(lc)}`);
+    if (expandBtn.disabled) expandBtn.disabled = false;
+    setAttr(expandBtn, "aria-disabled", shortfall > 0);
+    setAttr(
+      expandBtn,
       "aria-label",
       shortfall > 0
         ? `Expand site: need ${fmt.money(shortfall)} more`
         : "Expand site"
     );
     expandBtn.classList.toggle("blocked", shortfall > 0);
-    expandStatus.textContent = shortfall > 0 ? `Need ${fmt.money(shortfall)} more` : "";
-    expandStatus.className = "expand-status" + (shortfall > 0 ? " warn" : "");
-    siteFooter.textContent =
+    setText(
+      expandStatus,
+      shortfall > 0 ? `Need ${fmt.money(shortfall)} more` : ""
+    );
+    setClass(expandStatus, "expand-status" + (shortfall > 0 ? " warn" : ""));
+    setText(
+      siteFooter,
       m.builtCount === 0
         ? "Your site is empty. Build a Hamster Wheel to start generating power."
         : `${m.builtCount} structures · ${fmt.num(m.power)} kWh/s · ${fmt.sign(
             m.netEmissions
-          )} kg CO₂/s net`;
+          )} kg CO₂/s net`
+    );
 
     // Dynamic panels
     updateBuildRows();

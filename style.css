@@ -900,6 +900,10 @@ button {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tab.active {
@@ -1245,11 +1249,22 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 28px;
 }
 
 .research-req {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
   color: var(--dim);
   font-size: 0.67rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.research-btn {
+  flex: 0 0 auto;
+  padding: 6px 10px;
 }
 
 .research-req.warn {
@@ -1258,6 +1273,10 @@ button {
 
 .research-req.ready {
   color: var(--green);
+}
+
+.research-btn {
+  flex: 0 0 auto;
 }
 
 .research-btn {
