@@ -177,7 +177,10 @@ export function createUI() {
     return s;
   })());
   const expandBtn = h("button", "ghost-btn", "Expand");
-  siteHead.append(siteTitleWrap, expandBtn);
+  const expandStatus = h("span", "expand-status", "");
+  const expandWrap = h("div", "expand-wrap");
+  expandWrap.append(expandStatus, expandBtn);
+  siteHead.append(siteTitleWrap, expandWrap);
   const siteGrid = h("div", "site-grid");
   const siteFooter = h("div", "site-footer");
   sitePanel.append(siteHead, siteGrid, siteFooter);
@@ -850,16 +853,19 @@ export function createUI() {
     // Site
     siteTitleWrap._hint.textContent = `${m.freePlots} free / ${state.plots.length} plots`;
     const lc = landCost();
+    const shortfall = Math.max(0, lc - state.money);
     expandBtn.textContent = `Expand +${LAND_PER_EXPANSION} · ${fmt.money(lc)}`;
     expandBtn.disabled = false;
-    expandBtn.setAttribute("aria-disabled", (state.money < lc).toString());
+    expandBtn.setAttribute("aria-disabled", (shortfall > 0).toString());
     expandBtn.setAttribute(
       "aria-label",
-      state.money < lc
-        ? `Expand site: need ${fmt.money(lc - state.money)} more`
+      shortfall > 0
+        ? `Expand site: need ${fmt.money(shortfall)} more`
         : "Expand site"
     );
-    expandBtn.classList.toggle("blocked", state.money < lc);
+    expandBtn.classList.toggle("blocked", shortfall > 0);
+    expandStatus.textContent = shortfall > 0 ? `Need ${fmt.money(shortfall)} more` : "";
+    expandStatus.className = "expand-status" + (shortfall > 0 ? " warn" : "");
     siteFooter.textContent =
       m.builtCount === 0
         ? "Your site is empty. Build a Hamster Wheel to start generating power."
@@ -897,6 +903,11 @@ export function createUI() {
       expandBtn.classList.remove("shake");
       void expandBtn.offsetWidth;
       expandBtn.classList.add("shake");
+    } else {
+      expandBtn.classList.remove("flash");
+      void expandBtn.offsetWidth;
+      expandBtn.classList.add("flash");
+      spawnBuildFloater(expandWrap, res.cost);
     }
     update();
   });
